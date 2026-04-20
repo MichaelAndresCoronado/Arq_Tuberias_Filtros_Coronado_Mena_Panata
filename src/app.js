@@ -10,13 +10,19 @@ const libroRoutes = require('./routes/libroRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');     // NUEVO
 const prestamoRoutes = require('./routes/prestamoRoutes');
 
+// --- ESTO ES LO QUE TE FALTA ---
+app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//habilitamos el cors dentro de la aplicacion.
-app.use(cors());
-app.use(express.json());
+// //habilitamos el cors dentro de la aplicacion.
+// app.use(cors());
+// // ESTO ES LO QUE EVITA EL ERROR DE VALORES NULL
+// app.use(express.json()); 
+// app.use(express.urlencoded({ extended: true }));
 
 //rutas
 app.use('/api/autores', autorRoutes);
