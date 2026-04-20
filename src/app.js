@@ -10,12 +10,13 @@ const libroRoutes = require('./routes/libroRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');     // NUEVO
 const prestamoRoutes = require('./routes/prestamoRoutes');
 
+const app = express();
 // --- ESTO ES LO QUE TE FALTA ---
 app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
-const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 // //habilitamos el cors dentro de la aplicacion.

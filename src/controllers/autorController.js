@@ -8,60 +8,47 @@ const getAllAutores = async (req, res) => {
         console.log(error);
         res.status(500).json({ error: 'Error al obtener autores' });
     }
-}
+};
 
 const createAutor = async (req, res) => {
     try {
         const nuevoAutor = await Autor.createAutor(req.body);
-        res.json(nuevoAutor);
+        res.status(201).json(nuevoAutor);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Error al crear el autor' });
     }
-}
-
-// para el actualizar poner de la siguiente manera,
-//(req.params.id, req.body) asi para el actualizar. where id = ?
-// para buscar por id  de igual manera (req.params.id, req.body)
+};
 
 const getAutorById = async (req, res) => {
     try {
-        // Pasamos ambos parámetros exactamente como se solicitó
         const autor = await Autor.findById(req.params.id, req.body);
-        
+
         if (!autor) {
             return res.status(404).json({ error: 'Autor no encontrado' });
         }
+
         res.json(autor);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Error al obtener el autor' });
     }
-}
-
-// const getAutorById = async (req, res) => {
-//     try {
-//         const autor = await Autor.findById(req.params.id);
-//         if (!autor) {
-//             return res.status(404).json({ error: 'Autor no encontrado' });
-//         }
-//         res.json(autor);
-//     } catch (error) {
-//         res.status(500).json({ error: 'Error al obtener el autor' });
-//     }
-// }
+};
 
 const updateAutor = async (req, res) => {
     try {
         const autorActualizado = await Autor.updateAutor(req.params.id, req.body);
+
+        if (!autorActualizado) {
+            return res.status(404).json({ error: 'Autor no encontrado' });
+        }
+
         res.json(autorActualizado);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Error al actualizar el autor' });
     }
-}
-
-
+};
 
 const deleteAutor = async (req, res) => {
     try {
@@ -71,13 +58,12 @@ const deleteAutor = async (req, res) => {
         console.log(error);
         res.status(500).json({ error: 'Error al eliminar el autor' });
     }
-}
+};
 
 const searchAutores = async (req, res) => {
     try {
-        const q = req.query.q; // Capturamos el parámetro 'q' de la URL
-        
-        // Validación requerida por el documento
+        const q = req.query.q;
+
         if (!q) {
             return res.status(400).json({ error: 'El parámetro de consulta "q" es obligatorio' });
         }
@@ -88,9 +74,13 @@ const searchAutores = async (req, res) => {
         console.log(error);
         res.status(500).json({ error: 'Error al buscar los autores' });
     }
-}
+};
 
-
-module.exports = { getAllAutores, createAutor, deleteAutor, getAutorById, updateAutor, searchAutores };
-
-
+module.exports = {
+    getAllAutores,
+    createAutor,
+    deleteAutor,
+    getAutorById,
+    updateAutor,
+    searchAutores
+};
