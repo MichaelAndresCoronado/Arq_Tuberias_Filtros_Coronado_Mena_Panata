@@ -1,22 +1,49 @@
-const express = require('express');         //instancia del servidor express
-const router = express.Router();            //nueva instancia del enrutador.
+// src/routes/libroRoutes.js
+const express = require('express');
+const router = express.Router();
 
-//importamos el controlador de libros para manejar las rutas relacionadas con libros.
-const {
-    getAllLibros,
-    createLibro,
-    getLibroById,
-    updateLibro,
-    deleteLibro 
-} = require('../controllers/libroController'); 
+// Importaciones de los filtros (Tus compañeros crearán estos archivos)
+const inputFilters = require('../filters/input/libroInputFilters');
+const processingFilters = require('../filters/processing/libroProcessingFilters');
+const outputFilters = require('../filters/output/responseFilters');
 
-//rutas para la gestion de libros
-router.get('/', getAllLibros);
-router.post('/', createLibro);
-router.get('/:id', getLibroById);
-router.put('/:id', updateLibro);
-router.delete('/:id', deleteLibro);
+// ==========================================
+// TUBERÍAS PARA LIBROS
+// ==========================================
+
+// Tubería: Obtener todos los libros
+router.get('/', 
+    processingFilters.fetchAllLibros, 
+    outputFilters.sendSuccessResponse
+);
+
+// Tubería: Crear un nuevo libro
+router.post('/', 
+    inputFilters.validateLibroData, 
+    processingFilters.createLibroInDb, 
+    outputFilters.sendCreatedResponse
+);
+
+// Tubería: Obtener libro por ID
+router.get('/:id', 
+    inputFilters.validateIdParam, 
+    processingFilters.fetchLibroById, 
+    outputFilters.sendSuccessResponse
+);
+
+// Tubería: Actualizar libro
+router.put('/:id', 
+    inputFilters.validateIdParam,
+    inputFilters.validateLibroData, 
+    processingFilters.updateLibroInDb, 
+    outputFilters.sendSuccessResponse
+);
+
+// Tubería: Eliminar libro
+router.delete('/:id', 
+    inputFilters.validateIdParam, 
+    processingFilters.deleteLibroFromDb, 
+    outputFilters.sendSuccessResponse
+);
 
 module.exports = router;
-
-// redireciona a las rutas de mi aplicacion.
