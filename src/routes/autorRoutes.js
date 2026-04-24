@@ -27,7 +27,7 @@ router.get('/buscar',
 // Tubería: Crear un nuevo autor
 router.post('/', 
     inputFilters.validateAutorData,      // 1. Filtro: Validar que vengan nombre, apellido, etc.
-    processingFilters.createUserInDb,    // 2. Filtro: Crear el usuario (transacción paso 1)
+    // processingFilters.createUserInDb,    // 2. Filtro: Crear el usuario (transacción paso 1)
     processingFilters.createAutorInDb,   // 3. Filtro: Crear el autor (transacción paso 2)
     outputFilters.sendCreatedResponse    // 4. Filtro: Enviar código 201 y el JSON
 );

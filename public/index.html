@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Biblioteca - Sistema Moderno</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-book"></i>
+                    <span>BiblioHub</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#autores" class="nav-item active" data-section="autores">
+                    <i class="fas fa-feather"></i>
+                    <span>Autores</span>
+                </a>
+                <a href="#libros" class="nav-item" data-section="libros">
+                    <i class="fas fa-book-open"></i>
+                    <span>Libros</span>
+                </a>
+                <a href="#usuarios" class="nav-item" data-section="usuarios">
+                    <i class="fas fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+                <a href="#prestamos" class="nav-item" data-section="prestamos">
+                    <i class="fas fa-handshake"></i>
+                    <span>Préstamos</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-content">
+                    <h1>Sistema de Gestión de Biblioteca</h1>
+                    <div class="header-info">
+                        <span class="api-status"><i class="fas fa-circle"></i> Conectado</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- AUTORES Section -->
+                <section id="autores-section" class="section active">
+                    <div class="section-header">
+                        <h2>Gestión de Autores</h2>
+                        <button class="btn btn-primary btn-add" id="btn-add-autor">
+                            <i class="fas fa-plus"></i> Nuevo Autor
+                        </button>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" id="search-autores" placeholder="Buscar autores por nombre...">
+                        <button id="btn-search-autores" class="btn btn-secondary">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabla-autores" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Email</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="autores-tbody">
+                                <tr><td colspan="5" class="loading"><i class="fas fa-spinner"></i> Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- LIBROS Section -->
+                <section id="libros-section" class="section">
+                    <div class="section-header">
+                        <h2>Gestión de Libros</h2>
+                        <button class="btn btn-primary btn-add" id="btn-add-libro">
+                            <i class="fas fa-plus"></i> Nuevo Libro
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabla-libros" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>ISBN</th>
+                                    <th>Autor</th>
+                                    <th>Stock</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="libros-tbody">
+                                <tr><td colspan="6" class="loading"><i class="fas fa-spinner"></i> Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- USUARIOS Section -->
+                <section id="usuarios-section" class="section">
+                    <div class="section-header">
+                        <h2>Gestión de Usuarios</h2>
+                        <button class="btn btn-primary btn-add" id="btn-add-usuario">
+                            <i class="fas fa-plus"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabla-usuarios" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>Email</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuarios-tbody">
+                                <tr><td colspan="5" class="loading"><i class="fas fa-spinner"></i> Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- PRESTAMOS Section -->
+                <section id="prestamos-section" class="section">
+                    <div class="section-header">
+                        <h2>Gestión de Préstamos</h2>
+                        <button class="btn btn-primary btn-add" id="btn-add-prestamo">
+                            <i class="fas fa-plus"></i> Nuevo Préstamo
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabla-prestamos" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Libro</th>
+                                    <th>Fecha Préstamo</th>
+                                    <th>Fecha Devolución Prevista</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prestamos-tbody">
+                                <tr><td colspan="7" class="loading"><i class="fas fa-spinner"></i> Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Formularios -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="modal-title">Modal Title</h2>
+            <form id="form-modal">
+                <div id="form-fields"></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
