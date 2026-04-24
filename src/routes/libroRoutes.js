@@ -1,4 +1,3 @@
-// src/routes/libroRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -6,10 +5,6 @@ const router = express.Router();
 const inputFilters = require('../filters/input/libroInputFilters');
 const processingFilters = require('../filters/processing/libroProcessingFilters');
 const outputFilters = require('../filters/output/responseFilters');
-
-// ==========================================
-// TUBERÍAS PARA LIBROS
-// ==========================================
 
 // Tubería: Obtener todos los libros
 router.get('/', 

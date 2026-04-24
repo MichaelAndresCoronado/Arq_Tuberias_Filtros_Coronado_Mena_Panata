@@ -1,4 +1,3 @@
-// src/filters/processing/libroProcessingFilters.js
 const Libro = require('../../models/Libro');
 
 const fetchAllLibros = async (req, res, next) => {

@@ -1,5 +1,3 @@
-// src/filters/input/prestamoInputFilters.js
-
 const validatePrestamoData = (req, res, next) => {
     const { usuario_id, libro_id, fecha_prestamo, fecha_devolucion_prevista } = req.body;
 
@@ -9,8 +7,33 @@ const validatePrestamoData = (req, res, next) => {
         return next(error);
     }
 
+    if (isNaN(usuario_id) || isNaN(libro_id)) {
+        const error = new Error('usuario_id y libro_id deben ser numéricos');
+        error.status = 400;
+        return next(error);
+    }
+
+    const fechaPrestamoDate = new Date(fecha_prestamo);
+    const fechaPrevistaDate = new Date(fecha_devolucion_prevista);
+    if (Number.isNaN(fechaPrestamoDate.getTime()) || Number.isNaN(fechaPrevistaDate.getTime())) {
+        const error = new Error('Las fechas del préstamo son inválidas');
+        error.status = 400;
+        return next(error);
+    }
+
+    if (fechaPrevistaDate < fechaPrestamoDate) {
+        const error = new Error('La fecha de devolución prevista no puede ser menor que la fecha de préstamo');
+        error.status = 400;
+        return next(error);
+    }
+
     // Guardamos en la tubería
-    req.pipeline.input = { usuario_id, libro_id, fecha_prestamo, fecha_devolucion_prevista };
+    req.pipeline.input = {
+        usuario_id: Number(usuario_id),
+        libro_id: Number(libro_id),
+        fecha_prestamo,
+        fecha_devolucion_prevista
+    };
     next();
 };
 

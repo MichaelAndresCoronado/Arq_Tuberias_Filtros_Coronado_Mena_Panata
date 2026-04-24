@@ -27,6 +27,12 @@ const Autor = {
 
             const usuarioId = userResult.insertId;
 
+            // Asignar rol por defecto (ej. 1 = Autor/Lector)
+            await connection.query(
+                'INSERT INTO usuario_rol (usuario_id, rol_id) VALUES (?, ?)',
+                [usuarioId, 1]
+            );
+
             const [autorResult] = await connection.query(
                 'INSERT INTO autor (usuario_id) VALUES (?)',
                 [usuarioId]

@@ -1,5 +1,3 @@
-// src/filters/input/usuarioInputFilters.js
-
 const validateUsuarioData = (req, res, next) => {
     const { nombre, apellido, email, password, rol_id } = req.body;
 
@@ -19,6 +17,25 @@ const validateUsuarioData = (req, res, next) => {
     next();
 };
 
+const validateUsuarioUpdateData = (req, res, next) => {
+    const { nombre, apellido, email, password } = req.body;
+
+    if (!nombre || !apellido || !email) {
+        const error = new Error('Nombre, apellido y email son obligatorios');
+        error.status = 400;
+        return next(error);
+    }
+
+    if (!email.includes('@')) {
+        const error = new Error('El formato del email no es válido');
+        error.status = 400;
+        return next(error);
+    }
+
+    req.pipeline.input = { nombre, apellido, email, password };
+    next();
+};
+
 const validateIdParam = (req, res, next) => {
     if (isNaN(req.params.id)) {
         const error = new Error('El ID del usuario debe ser numérico');
@@ -30,5 +47,6 @@ const validateIdParam = (req, res, next) => {
 
 module.exports = {
     validateUsuarioData,
+    validateUsuarioUpdateData,
     validateIdParam
 };

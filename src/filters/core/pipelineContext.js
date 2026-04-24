@@ -1,9 +1,4 @@
-// src/filters/core/pipelineContext.js
 
-/**
- * Este es el primer filtro de TODA la aplicación.
- * Prepara el "paquete de datos" que viajará por toda la tubería.
- */
 const initializePipeline = (req, res, next) => {
     req.pipeline = {
         // Aquí los filtros de entrada (Integrante 2) pondrán los datos limpios

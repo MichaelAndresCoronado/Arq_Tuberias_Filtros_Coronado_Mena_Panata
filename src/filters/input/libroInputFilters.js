@@ -1,5 +1,3 @@
-// src/filters/input/libroInputFilters.js
-
 const validateLibroData = (req, res, next) => {
     let { titulo, isbn, anio_publicacion, edicion, autor_id } = req.body;
 

@@ -70,7 +70,8 @@ CREATE TABLE libro (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     isbn VARCHAR(50) UNIQUE NOT NULL,
-    stock INT DEFAULT 1 CHECK (stock >= 0),
+    anio_publicacion INT NULL,
+    edicion VARCHAR(50) NULL,
     autor_id INT NOT NULL,
 
     FOREIGN KEY (autor_id) REFERENCES autor(id) ON DELETE RESTRICT

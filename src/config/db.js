@@ -1,6 +1,4 @@
 const mysql = require('mysql2');
-const { Connection } = require('mysql2');
-
 
 require('dotenv').config();
 
@@ -18,5 +16,31 @@ const pool = mysql.createPool({
 
 //async - await
 const promisePool = pool.promise();
+
+// Sincronización mínima de esquema para entornos con BD previa.
+const ensureSchema = async () => {
+    try {
+        const [columns] = await promisePool.query(
+            `SELECT COLUMN_NAME
+             FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'libro'`,
+            [process.env.DB_NAME]
+        );
+
+        const columnNames = new Set(columns.map((column) => column.COLUMN_NAME));
+
+        if (!columnNames.has('anio_publicacion')) {
+            await promisePool.query('ALTER TABLE libro ADD COLUMN anio_publicacion INT NULL');
+        }
+
+        if (!columnNames.has('edicion')) {
+            await promisePool.query('ALTER TABLE libro ADD COLUMN edicion VARCHAR(50) NULL');
+        }
+    } catch (error) {
+        console.error('No se pudo verificar/actualizar el esquema de libro:', error.message);
+    }
+};
+
+ensureSchema();
 
 module.exports = promisePool;

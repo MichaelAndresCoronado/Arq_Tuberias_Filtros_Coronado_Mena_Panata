@@ -1,5 +1,3 @@
-// src/filters/output/responseFilters.js
-
 const sendSuccessResponse = (req, res, next) => {
     // Código 200 para peticiones OK (GET, PUT, DELETE)
     res.status(200).json({

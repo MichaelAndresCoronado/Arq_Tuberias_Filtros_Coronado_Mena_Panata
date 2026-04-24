@@ -1,14 +1,39 @@
-// src/filters/processing/prestamoProcessingFilters.js
 const Prestamo = require('../../models/Prestamo');
 const db = require('../../config/db');
+
+const fetchAllPrestamos = async (req, res, next) => {
+    try {
+        const prestamos = await Prestamo.findAll();
+        req.pipeline.response = prestamos;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+const fetchPrestamoById = async (req, res, next) => {
+    try {
+        const prestamo = await Prestamo.findById(req.params.id);
+        if (!prestamo) {
+            const err = new Error('Préstamo no encontrado');
+            err.status = 404;
+            return next(err);
+        }
+        req.pipeline.response = prestamo;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
 
 // Filtro especializado: Verifica si el libro está disponible ANTES de guardar
 const checkLibroAvailability = async (req, res, next) => {
     try {
         const { libro_id } = req.pipeline.input;
+        const currentPrestamoId = req.params.id;
         const [prestamosActivos] = await db.query(
-            'SELECT id FROM prestamo WHERE libro_id = ? AND activo = 1', 
-            [libro_id]
+            `SELECT id FROM prestamo WHERE libro_id = ? AND activo = 1 ${currentPrestamoId ? 'AND id <> ?' : ''}`,
+            currentPrestamoId ? [libro_id, currentPrestamoId] : [libro_id]
         );
 
         if (prestamosActivos.length > 0) {
@@ -32,6 +57,21 @@ const createPrestamoInDb = async (req, res, next) => {
     }
 };
 
+const updatePrestamoInDb = async (req, res, next) => {
+    try {
+        const prestamoActualizado = await Prestamo.updatePrestamo(req.params.id, req.pipeline.input);
+        if (!prestamoActualizado) {
+            const err = new Error('Préstamo no encontrado');
+            err.status = 404;
+            return next(err);
+        }
+        req.pipeline.response = prestamoActualizado;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
 const processDevolucionInDb = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -49,6 +89,22 @@ const processDevolucionInDb = async (req, res, next) => {
     }
 };
 
+const deletePrestamoFromDb = async (req, res, next) => {
+    try {
+        const result = await Prestamo.deletePrestamo(req.params.id);
+        req.pipeline.response = result;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
-    checkLibroAvailability, createPrestamoInDb, processDevolucionInDb
+    fetchAllPrestamos,
+    fetchPrestamoById,
+    checkLibroAvailability,
+    createPrestamoInDb,
+    updatePrestamoInDb,
+    processDevolucionInDb,
+    deletePrestamoFromDb
 };

@@ -1,221 +1,111 @@
-## Sistema de Gestión de Biblioteca API
+## API REST de Biblioteca - Arquitectura de Tuberías y Filtros
 
-API REST desarrollada con Node.js, Express y MySQL, orientada a la gestión de libros, autores, usuarios y préstamos, aplicando buenas prácticas de diseño, integridad de datos y control de concurrencia.
+API REST desarrollada con Node.js, Express y MySQL, orientada a la gestión de libros, autores, usuarios y préstamos. Este proyecto abandona el patrón clásico de controladores monolíticos para implementar estrictamente el patrón de **Arquitectura de Tuberías y Filtros (Pipes and Filters)**.
 
-## Justificación del Modelo de Datos
+## Justificación de la Arquitectura
 
-El modelo implementa una estrategia basada en composición + roles, evitando herencia directa.
+El modelo implementa una estrategia de procesamiento secuencial e independiente, donde cada solicitud HTTP viaja a través de una tubería ensamblada con filtros específicos.
 
-## Estructura principal
+## Estructura principal (Flujo de la Tubería)
 
-usuario → entidad base
-autor → extensión de usuario
-rol + usuario_rol → gestión flexible de roles
-libro → asociado a autor
-prestamo → relación entre usuario y libro
+Petición HTTP → entidad base
+Filtro Inicial → crea el `req.pipeline` (transporte estandarizado)
+Filtros de Entrada → validación, sanitización y limpieza de datos
+Filtros de Procesamiento → lógica de negocio y consultas a BD
+Filtros de Salida → formateo de respuestas (200/201)
+Filtro Sumidero → captura global de errores
 
 ## Atributos de calidad
-# Rendimiento
 
-Uso de índices (idx_libro_autor, unique_prestamo_activo)
-Pool de conexiones (mysql2)
-Consultas optimizadas con JOIN
+# Rendimiento
+Salida temprana (Early Exit) si un filtro de entrada detecta datos inválidos, evitando cargas innecesarias en la base de datos.
+Pool de conexiones (mysql2) para consultas concurrentes.
 
 # Mantenibilidad
-
-Separación por capas (MVC)
-Reutilización de entidad usuario
-Código modular
+Alta cohesión y bajo acoplamiento. Cada filtro hace una sola cosa (Single Responsibility Principle).
+Reutilización de filtros (ej. `validateIdParam`, `sendSuccessResponse` se usan en múltiples rutas).
 
 # Escalabilidad
+Fácil inserción de nuevos procesos (ej. si a futuro se requiere un filtro de "Autenticación JWT", solo se añade a la tubería sin modificar los demás filtros).
 
-Roles dinámicos mediante tabla intermedia
-Modelo extensible (nuevos roles, entidades)
-Preparado para microservicios
+## Funcionalidad del Diseño de Tuberías y Filtros
 
-# Justificación del Diseño de Base de Datos (SQL)
+El diseño fue construido bajo principios de seguridad, modularidad y transporte estandarizado de estado.
 
-El diseño SQL fue construido bajo principios de:
-
-Integridad referencial
-Normalización
-Control de concurrencia
-Consistencia de datos
-
-# 1. Uso de utf8mb4
-DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+# 1. El Contexto de la Tubería (`req.pipeline`)
+Todo inicia en `initializePipeline.js`.
 
 # Permite:
+Crear un objeto estándar que viaja por toda la petición:
+`input`: Guarda los datos limpios y seguros.
+`response`: Guarda la data de la BD lista para enviarse.
+`error`: Registra fallos si ocurren.
 
-Soporte completo de caracteres Unicode
-Compatibilidad con emojis y múltiples idiomas
-
-# 2. Integridad referencial con claves foráneas
-FOREIGN KEY (...) REFERENCES ... ON DELETE CASCADE / RESTRICT
-
-# Beneficios:
-
-Evita datos huérfanos
-Controla eliminaciones:
-CASCADE → elimina dependencias automáticamente
-RESTRICT → protege datos críticos
-
-# 3. Uso de tabla intermedia usuario_rol
-PRIMARY KEY (usuario_id, rol_id)
-
-# Permite:
-
-Relación muchos a muchos
-Un usuario con múltiples roles
-Escalabilidad sin cambios estructurales
-
-# 4. Restricciones de unicidad
-UNIQUE(email)
-UNIQUE(nombre, apellido)
-UNIQUE(isbn)
-
-# Evita:
-
-Duplicidad de usuarios
-Libros repetidos
-Inconsistencias
-## 5. Uso de CHECK
-
-CHECK (stock >= 0)
-CHECK (fecha_devolucion_prevista >= fecha_prestamo)
+# 2. Filtros de Entrada (Input Filters)
+Intervienen apenas llega la petición (`autorInputFilters.js`, `libroInputFilters.js`, etc.).
 
 # Garantiza:
+Limpieza de espacios (`trim()`).
+Validación de presencia de datos obligatorios.
+Sanitización Anti-XSS (Bloquea inyección de etiquetas HTML mediante Regex).
+Validación de formatos (Emails, ISBN de 10 o 13 dígitos, solo letras en nombres).
 
-Validez lógica de datos
-Prevención de errores desde BD
-
-## 6. Índices para optimización
-
-CREATE INDEX idx_libro_autor ON libro(autor_id);
-
-# Mejora:
-
-Búsquedas por autor
-Rendimiento en JOINs
-
-## 7. Control de concurrencia en préstamos
-
-ALTER TABLE prestamo
-ADD COLUMN activo TINYINT(1)
-GENERATED ALWAYS AS (
-    CASE 
-        WHEN fecha_devolucion_real IS NULL THEN 1
-        ELSE NULL
-    END
-) STORED;
-
-CREATE UNIQUE INDEX unique_prestamo_activo ON prestamo(libro_id, activo);
-
-# Esta es una decisión clave:
-
-Solo puede existir UN préstamo activo por libro
-Se evita que múltiples usuarios pidan el mismo libro simultáneamente
-
-# Ventajas:
-
-Control a nivel de base de datos (más seguro)
-Evita condiciones de carrera
-No depende solo del backend
-
-## 8. Uso de ON DELETE CASCADE
-FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
+# 3. Filtros de Procesamiento (Processing Filters)
+Extraen los datos limpios de `req.pipeline.input` y ejecutan la lógica pura.
 
 # Permite:
+Verificaciones de negocio (Ej. `checkLibroAvailability` verifica si un libro ya está prestado antes de intentar guardarlo).
+Ejecución transaccional en la BD aislando los modelos SQL de la lógica HTTP.
+Inyectar el resultado exitoso en `req.pipeline.response`.
 
-Eliminar automáticamente entidades dependientes (ej: autor)
+# 4. Sumidero de Errores (Error Sink)
+Ubicado al final de `app.js` (`errorFilter.js`).
 
-### Instalación y Ejecución
-## 1. Clonar repositorio
-
-git clone https://github.com/MichaelAndresCoronado/Laboratorio2_1p_Arq_Coronado_Mena_Panata.git
-cd Laboratorio2_1p_Arq_Coronado_Mena_Panata
-
-## 2. Configurar variables de entorno
-
-# Crear .env:
-
-DB_HOST=localhost
-DB_PORT=3307
-DB_USER=root
-DB_PASSWORD=1234
-DB_NAME=biblioteca
-
-## 3. Levantar Docker
-
-docker-compose up -d
-
-## 4. Instalar dependencias
-
-npm install
-
-## 5. Ejecutar API
-
-npm run dev
-
-## 6. Ejecutar Locust
-
-pip install locust
-locust -f locustfile.py
-
-Abrir:
-
-http://localhost:8089
+# Evita:
+Que el servidor colapse ante excepciones.
+Si cualquier filtro usa `next(error)`, Express salta el resto de la tubería y cae aquí, devolviendo un JSON estandarizado (400, 404, 500) al cliente.
 
 ## Decisiones Técnicas Relevantes
 
-# Pool de conexiones
+# Eliminación de Controladores
+La lógica se dividió en funciones pequeñas (filtros) que se pasan como un arreglo en el enrutador.
 
-Manejo eficiente de múltiples requests
+# Validación Defensiva
+Uso de expresiones regulares para proteger la base de datos de ataques XSS desde los inputs.
 
-# Transacciones
+# Manejo de Errores Delegado
+Ningún filtro de BD envía respuestas HTTP de error por sí mismo; todos delegan al sumidero de errores usando `next(error)`.
 
-Implementadas en creación de usuarios y autores
+# Separación de Modelos
+Las consultas SQL crudas se mantienen en la carpeta `models`, completamente ignorantes de si la petición viene de un API REST o de otro sistema.
 
-# Manejo de errores
-
-Validaciones HTTP (400, 404, 500)
-
-# JOINs optimizados
-
-Reducción de consultas múltiples
-
-# Formato de fechas
-
-Uso de DATE_FORMAT desde SQL
-
-# Endpoints
-
-# Libros
-GET /libros
-POST /libros
-GET /libros/:id
-PUT /libros/:id
-DELETE /libros/:id
+## Endpoints
 
 # Autores
-GET /autores
-POST /autores
-GET /autores/buscar?q=
-GET /autores/:id
-PUT /autores/:id
-DELETE /autores/:id
+GET /api/autores
+POST /api/autores
+GET /api/autores/buscar?q=
+GET /api/autores/:id
+PUT /api/autores/:id
+DELETE /api/autores/:id
+
+# Libros
+GET /api/libros
+POST /api/libros
+GET /api/libros/:id
+PUT /api/libros/:id
+DELETE /api/libros/:id
 
 # Usuarios
-POST /usuarios
-GET /usuarios/:id/prestamos
+POST /api/usuarios
+GET /api/usuarios/:id/prestamos
 
 # Préstamos
-POST /prestamos
-PUT /prestamos/:id/devolver
+POST /api/prestamos
+PUT /api/prestamos/:id/devolucion
 
-# Tecnologías
+## Tecnologías
 Node.js
 Express
 MySQL
 Docker
-Locust

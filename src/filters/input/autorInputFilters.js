@@ -1,21 +1,17 @@
-// src/filters/input/autorInputFilters.js
-
 const validateAutorData = (req, res, next) => {
     let { nombre, apellido, email, password } = req.body;
 
-    // 1. Limpieza de espacios (Trimming)
     nombre = nombre?.trim();
     apellido = apellido?.trim();
     email = email?.trim();
 
-    // 2. Validación de presencia
     if (!nombre || !apellido || !email) {
         const error = new Error('Nombre, apellido y email son requeridos');
         error.status = 400;
         return next(error);
     }
 
-    // 3. Sanitización Anti-XSS (Bloquea <h1>, <script>, <div> y cualquier etiqueta)
+    // (Bloquea <h1>, <script>, <div> y cualquier etiqueta)
     const htmlRegex = /<[^>]*>/g; 
     if (htmlRegex.test(nombre) || htmlRegex.test(apellido)) {
         const error = new Error('Ataque detectado: No se permiten etiquetas HTML en los nombres');

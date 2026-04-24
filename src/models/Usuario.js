@@ -1,6 +1,11 @@
 const db = require('../config/db');
 
 const Usuario = {
+    findAll: async () => {
+        const [rows] = await db.query('SELECT id, nombre, apellido, email FROM usuario');
+        return rows;
+    },
+
     findById: async (id) => {
         const [rows] = await db.query(
             'SELECT id, nombre, apellido, email FROM usuario WHERE id = ?',
@@ -60,6 +65,39 @@ const Usuario = {
         } finally {
             connection.release();
         }
+    }
+    ,
+
+    updateUsuario: async (id, { nombre, apellido, email, password }) => {
+        const fields = [nombre, apellido, email];
+        let query = 'UPDATE usuario SET nombre = ?, apellido = ?, email = ?';
+
+        if (password) {
+            query += ', password = ?';
+            fields.push(password);
+        }
+
+        query += ' WHERE id = ?';
+        fields.push(id);
+
+        const [result] = await db.query(query, fields);
+        if (result.affectedRows === 0) return null;
+
+        return {
+            id: Number(id),
+            nombre,
+            apellido,
+            email,
+            message: 'Usuario actualizado correctamente'
+        };
+    },
+
+    deleteUsuario: async (id) => {
+        const [result] = await db.query('DELETE FROM usuario WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return { message: 'Usuario no encontrado' };
+        }
+        return { message: 'Usuario eliminado correctamente' };
     }
 };
 

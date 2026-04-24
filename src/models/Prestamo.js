@@ -1,6 +1,43 @@
 const db = require('../config/db');
 
 const Prestamo = {
+    findAll: async () => {
+        const [rows] = await db.query(`
+            SELECT 
+                p.id,
+                p.usuario_id,
+                p.libro_id,
+                u.nombre AS nombre_usuario,
+                l.titulo AS titulo_libro,
+                DATE_FORMAT(p.fecha_prestamo, '%Y-%m-%d') AS fecha_prestamo,
+                DATE_FORMAT(p.fecha_devolucion_prevista, '%Y-%m-%d') AS fecha_devolucion_prevista,
+                DATE_FORMAT(p.fecha_devolucion_real, '%Y-%m-%d') AS fecha_devolucion_real
+            FROM prestamo p
+            LEFT JOIN usuario u ON p.usuario_id = u.id
+            LEFT JOIN libro l ON p.libro_id = l.id
+        `);
+        return rows;
+    },
+
+    findById: async (id) => {
+        const [rows] = await db.query(`
+            SELECT 
+                p.id,
+                p.usuario_id,
+                p.libro_id,
+                u.nombre AS nombre_usuario,
+                l.titulo AS titulo_libro,
+                DATE_FORMAT(p.fecha_prestamo, '%Y-%m-%d') AS fecha_prestamo,
+                DATE_FORMAT(p.fecha_devolucion_prevista, '%Y-%m-%d') AS fecha_devolucion_prevista,
+                DATE_FORMAT(p.fecha_devolucion_real, '%Y-%m-%d') AS fecha_devolucion_real
+            FROM prestamo p
+            LEFT JOIN usuario u ON p.usuario_id = u.id
+            LEFT JOIN libro l ON p.libro_id = l.id
+            WHERE p.id = ?
+        `, [id]);
+        return rows[0];
+    },
+
     createPrestamo: async ({ usuario_id, libro_id, fecha_prestamo, fecha_devolucion_prevista }) => {
         try {
             const [result] = await db.query(
@@ -14,6 +51,24 @@ const Prestamo = {
             }
             throw error; 
         }
+    },
+
+    updatePrestamo: async (id, { usuario_id, libro_id, fecha_prestamo, fecha_devolucion_prevista }) => {
+        const [result] = await db.query(
+            'UPDATE prestamo SET usuario_id = ?, libro_id = ?, fecha_prestamo = ?, fecha_devolucion_prevista = ? WHERE id = ?',
+            [usuario_id, libro_id, fecha_prestamo, fecha_devolucion_prevista, id]
+        );
+
+        if (result.affectedRows === 0) return null;
+
+        return {
+            id: Number(id),
+            usuario_id,
+            libro_id,
+            fecha_prestamo,
+            fecha_devolucion_prevista,
+            message: 'Préstamo actualizado correctamente'
+        };
     },
 
     // NUEVO: Registrar la devolución de un libro
@@ -35,6 +90,14 @@ const Prestamo = {
         );
 
         return { id, fecha_devolucion_real, message: 'Libro devuelto exitosamente. El libro ya está disponible.' };
+    },
+
+    deletePrestamo: async (id) => {
+        const [result] = await db.query('DELETE FROM prestamo WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return { message: 'Préstamo no encontrado' };
+        }
+        return { message: 'Préstamo eliminado correctamente' };
     }
 };
 

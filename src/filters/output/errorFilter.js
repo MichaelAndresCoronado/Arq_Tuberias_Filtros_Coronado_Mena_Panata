@@ -1,9 +1,3 @@
-// src/filters/output/errorFilter.js
-
-/**
- * Este es el "Sumidero de Errores". Si algún filtro anterior llama a next(error),
- * Express saltará todos los filtros intermedios y caerá directamente aquí.
- */
 const globalErrorHandler = (err, req, res, next) => {
     console.error('🚨 Error en la tubería:', err.message || err);
 

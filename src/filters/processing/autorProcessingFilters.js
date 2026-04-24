@@ -1,4 +1,3 @@
-// src/filters/processing/autorProcessingFilters.js
 const Autor = require('../../models/Autor');
 
 const fetchAllAutores = async (req, res, next) => {
